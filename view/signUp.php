@@ -1,6 +1,5 @@
 <html>
     <body>
-
         <?php   // VALIDATION LOGIC --> to be moved to a separate file later on
 
             $error = [];
@@ -85,7 +84,7 @@
                 <a href="login.php">Click here to login</a>
             </p>
         <?php } ?>
-        <form action="<?php echo $_SERVER['PHP_SELF']?>" method="POST">
+        <form action="<?php echo $_SERVER["PHP_SELF"] ?>" method="POST">
             <label for="name">Name: </label>
             <input type="text" id="name" name="name" placeholder="Enter your Name" >
             <?php
