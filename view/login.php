@@ -1,13 +1,24 @@
 <html>
+   <head> <link rel="stylesheet" href="login.css"> </head>
+
     <body>
 
-        <h1>Welcome Back, Login to continue the journey🧑‍🚀</h1>
+       
         <?php
             if (isset($error["login"])) {
                 echo "<p style='color:red'>{$error["login"]}</p>";
             }
         ?>
         <form action="loginValidation.php"  method = "POST">
+
+          <div class="login-wrapper">
+
+    <div class="login-left">
+        <h2>Welcome Back</h2>
+        <p>Login to continue your journey with Echo.</p>
+    </div>
+
+    <div class="login-right">
 
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="Enter your Email" >
@@ -25,9 +36,21 @@
                 }
             ?>
             <br>
-            <input type="submit">
+            <input type="submit"> 
+
+          <div class="form-footer">
+            New user?
+            <a href="signUp.php">SignUp</a>
+        </div>
+    
+    </div>
+
+</div>
+
 
         </form>
+
+        
 
     </body>
 </html>

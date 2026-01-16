@@ -1,4 +1,6 @@
 <html>
+    <head> <link rel="stylesheet" href="signup.css"> </head>
+
     <body>
         <?php   // VALIDATION LOGIC --> to be moved to a separate file later on
 
@@ -76,42 +78,63 @@
 
         ?>
 
-        <h1>Welcome, Sign-Up to begin your journey🚀</h1>
+
+        <div class="signup-wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="signup-left">
+        <h2>Join Echo Today</h2>
+        <p>
+            Create your account and start your journey with a modern,
+            secure and simple platform built for you.
+        </p>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="signup-right">
+
+        <h1>Create an account</h1>
+        <p class="subtitle">It’s quick and easy.</p>
+
         <?php if (!empty($success)) { ?>
-            <p style="color: green; font-weight: bold;">
-                <?php echo $success; ?>
-                <br>
+            <p style="color: green; font-weight: 600;">
+                <?php echo $success; ?><br>
                 <a href="login.php">Click here to login</a>
             </p>
         <?php } ?>
+
         <form action="<?php echo $_SERVER["PHP_SELF"] ?>" method="POST">
-            <label for="name">Name: </label>
-            <input type="text" id="name" name="name" placeholder="Enter your Name" >
-            <?php
-                if(isset($error["name"])){
-                    echo "<span style='color:red'>" . $error["name"] . "</span>";
-                }
-            ?>
-            <br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Enter your Email" >
-            <?php
-                if(isset($error["email"])){
-                    echo "<span style='color:red'>" . $error["email"] . "</span>";
-                }
-            ?>
-            <br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Enter Password" >
-            <?php
-                if(isset($error["password"])){
-                    echo "<span style='color:red'>" . $error["password"] . "</span>";
-                }
-            ?>
-            <br>
-            <input type="submit">
+
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="Enter your name">
+                <?php if(isset($error["name"])) echo "<span>".$error["name"]."</span>"; ?>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Enter your email">
+                <?php if(isset($error["email"])) echo "<span>".$error["email"]."</span>"; ?>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Create password">
+                <?php if(isset($error["password"])) echo "<span>".$error["password"]."</span>"; ?>
+            </div>
+
+            <input type="submit" value="Create Account">
 
         </form>
+
+        <div class="form-footer">
+            Already have an account?
+            <a href="login.php">Login</a>
+        </div>
+
+    </div>
+
+</div>
 
         
 
