@@ -1,11 +1,14 @@
 <?php
-session_start();
 
-// Redirect to dashboard if already logged in
+// Redirect was throwing errors -- temporarily commented
+session_start();
+//Redirect to dashboard if already logged in
 if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
     header('Location: ../dashboard/dashboard.php');
     exit();
 }
+
+
 
 $restrictedMsg = '';    
 // Get restricted msg if exits
@@ -15,6 +18,9 @@ if(isset($_SESSION['restrictedMsg'])){
 }
 
 // cookie -- remember me func.
+// check if email and password cookie exists and auto-fill
+$remembered_email = isset($_COOKIE['remember_email']) ? $_COOKIE['remember_email'] : '';
+$remembered_pass = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_password'] : '';
 
 ?>
 
@@ -32,13 +38,15 @@ if(isset($_SESSION['restrictedMsg'])){
         <!-- Display login error if exists -->
         <?php
             if (isset($error["login"])) {
-                echo "<p style='color:red'>{$error["login"]}</p>";
+            echo "<p style='color:red'>" . $error["login"] . "</p>";
             }
         ?>
         <form action="../../controller/loginValidation.php"  method = "POST">
 
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Enter your Email" >
+            <input type="email" id="email" name="email" placeholder="Enter your Email"
+            value="<?php echo htmlspecialchars($remembered_email); ?>"   
+            >
             <?php
                 if(isset($error["email"])){
                     echo "<span style='color:red'>" . $error["email"] . "</span>";
@@ -46,7 +54,9 @@ if(isset($_SESSION['restrictedMsg'])){
             ?>
             <br>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Enter Password" >
+            <input type="password" id="password" name="password" placeholder="Enter Password"
+            value = "<?php echo htmlspecialchars($remembered_pass); // auto-fill if cookie exits, else empty string ?>"
+            >
             <?php
                 if(isset($error["password"])){
                     echo "<span style='color:red'>" . $error["password"] . "</span>";
@@ -54,9 +64,13 @@ if(isset($_SESSION['restrictedMsg'])){
             ?>
             <br>
             <!-- Add Remember me func  -->
+            <input type="checkbox" id="remember_me" name="remember_me">
+            <label for="remember_me">Remember Me</label>
+            <br><br>
             <input type="submit">
 
         </form>
 
     </body>
 </html>
+
