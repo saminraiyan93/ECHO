@@ -1,5 +1,5 @@
 <?php
-    session_start();
+    session_start(); 
 
     require_once '../config/database.php';
 
@@ -23,7 +23,7 @@
 
         // if no error found
         if(empty($error)){
-            $sql = "SELECT * FROM USER WHERE user_email = '$email' and password = '$password'";
+            $sql = "SELECT * FROM user WHERE user_email = '$email' and password = '$password'";
             
             $result = $connection->query($sql); 
 
@@ -37,6 +37,18 @@
                 $_SESSION['logged_in'] = true;
 
                 // Set cookie implementation
+                if(isset($_POST['remember_me'])){
+                    // cookie expires in 30 days
+                    setcookie("remember_email", $email, time()+86400*30, '/');  // email cookie
+                    setcookie("remember_password", $password, time()+86400*30, '/');  // remember password cookie
+                } 
+                else{
+                    // If not checked, delete existing cookie
+                    if(isset($_COOKIE['remember_email']) && isset($_COOKIE['remember_password'])){
+                        setcookie('remember_email', '', time()-3600, '/');
+                        setcookie('remember_password', '', time()-3600, '/');
+                    }
+                }
 
                 // redirect to dashboard
                 header("Location: ../view/dashboard/dashboard.php");
