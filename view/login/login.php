@@ -1,7 +1,9 @@
 <?php
 
-// Redirect was throwing errors -- temporarily commented
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 //Redirect to dashboard if already logged in
 if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
     header('Location: ../dashboard/dashboard.php');
