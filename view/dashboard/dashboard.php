@@ -128,6 +128,7 @@ if(isset($_SESSION['user_name'])){
                 for(let i=0; i<data.length; i++){
                     const story = data[i];
                     const timeAgo = getTimeAgo(story.createdAt);
+                    const heartIcon = story.hasVoted ? '❤️' : '🤍';
 
                     const storyCard = `
                         <div class="story-card">
@@ -143,7 +144,7 @@ if(isset($_SESSION['user_name'])){
                             <p>${story.contents}</p>
 
                             <div class="story-actions">
-                                <button>❤️ ${story.vote}</button>
+                                <button class="vote-btn" onclick="toggleVote(${story.story_id}, this)">${heartIcon} ${story.vote}</button>
                                 <button>💬 Comment</button>
                             </div>
                         </div> ` ;
@@ -151,6 +152,33 @@ if(isset($_SESSION['user_name'])){
                         container.innerHTML += storyCard;
                 }
 
+            }
+
+            function toggleVote(storyId, buttonElement){
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '../../controller/voteController.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState === 4){
+                        if(xhr.status === 200){
+                            try{
+                                const response = JSON.parse(xhr.responseText);
+                                if(response.status === 'success'){
+                                    // Update button appearance
+                                    const heartIcon = response.voted ? '❤️' : '🤍';
+                                    buttonElement.innerHTML = `${heartIcon} ${response.voteCount}`;
+                                } else {
+                                    alert('Error: ' + response.message);
+                                }
+                            } catch(e){
+                                console.error("Error parsing response: ", e);
+                            }
+                        }
+                    }
+                };
+
+                xhr.send(JSON.stringify({story_id: storyId}));
             }
 
             window.onload = function(){
