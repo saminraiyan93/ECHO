@@ -49,8 +49,7 @@ if(isset($_SESSION['user_name'])){
                     <li class="active">🏠 Home</li>
                     <li onclick="window.location.href='./myStories.php'" >✍️ My Stories</li>
                     <li onclick="window.location.href='./profile.php'" >👤 Profile</li>
-                    <li>🔒 Change Password</li>
-                    
+                    <li><a href="./changePassword.php">🔒 Change Password</a></li>
                 </ul>
             </aside>
 

@@ -88,6 +88,17 @@
     color: #444;
 }
 
+.sidebar li a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    width: 100%;
+}
+
+.sidebar li a:hover {
+    color: inherit;
+}
+
 .sidebar li:hover,
 .sidebar .active {
     background: #f3e8ff;

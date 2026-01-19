@@ -15,9 +15,9 @@ if(isset($_SESSION['user_name'])){
 ?>
 
 <html>
-    <head>
+        <head>
         <title>My Stories</title>
-        <link rel="stylesheet" href="../dashboard/dashboard.css">
+        <link rel="stylesheet" href="./dashboard.css">
     </head>
     <body>
         <!-- TOP BAR -->
@@ -43,7 +43,7 @@ if(isset($_SESSION['user_name'])){
                 <li onclick="window.location.href='./dashboard.php'">🏠 Home</li>
                 <li class="active">✍️ My Stories</li>
                 <li onclick="window.location.href='./profile.php'" >👤 Profile</li>
-                <li>🔒 Change Password</li>
+                <li><a href="./changePassword.php">🔒 Change Password</a></li>
             </ul>
         </aside>
 
