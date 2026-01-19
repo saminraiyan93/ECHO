@@ -31,7 +31,7 @@ $db->close();
 <head>
     <meta charset="UTF-8">
     <title>Profile - Echo</title>
-    <link rel="stylesheet" href="../dashboard/dashboard.css">
+    <link rel="stylesheet" href="./dashboard.css">
     <style>
         .profile-container {
             background: white;
@@ -151,11 +151,11 @@ $db->close();
                 <h4><?php echo htmlspecialchars($userData['user_name']); ?></h4>
             </div>
 
-            <ul>
+                <ul>
                 <li onclick="window.location.href='./dashboard.php'">🏠 Home</li>
                 <li onclick="window.location.href='./myStories.php'">✍️ My Stories</li>
                 <li class="active">👤 Profile</li>
-                <li>🔒 Change Password</li>
+                <li><a href="./changePassword.php">🔒 Change Password</a></li>
             </ul>
         </aside>
 
