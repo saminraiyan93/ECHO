@@ -4,13 +4,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// DEBUG OUTPUT
+echo "<!-- DEBUG: POST data: " . print_r($_POST, true) . " -->";
+echo "<!-- DEBUG: REQUEST_METHOD: " . $_SERVER["REQUEST_METHOD"] . " -->";
+
 //Redirect to dashboard if already logged in
 if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
     header('Location: ../dashboard/dashboard.php');
     exit();
 }
 
+//Redirect to admin dashboard if admin already logged in
+if(isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true){
+    header('Location: ../admin/admin.php');
+    exit();
+}
 
+// Initialize error array if not set
+if(!isset($error)){
+    $error = [];
+}
 
 $restrictedMsg = '';    
 // Get restricted msg if exits
@@ -34,16 +47,23 @@ $remembered_pass = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_pas
         <!-- Display restricted access message -->
         <?php if(!empty($restrictedMsg)){ ?>
             <p style="color: orange; font-weight: bold; background: #fff3cd; padding: 10px; border-radius: 5px;">
-                ⚠️ <?php echo $restrictedMsg; ?>
+                ⚠️ <?php echo htmlspecialchars($restrictedMsg); ?>
             </p>
         <?php } ?>
+        
         <!-- Display login error if exists -->
         <?php
-            if (isset($error["login"])) {
-            echo "<p style='color:red'>" . $error["login"] . "</p>";
+            if (!empty($error["login"])) {
+                echo "<p style='color:red; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 5px;'>" . htmlspecialchars($error["login"]) . "</p>";
             }
         ?>
-        <form action="../../controller/loginValidation.php"  method = "POST">
+
+        <!-- Info: Both User and Admin Login -->
+        <p style="color: #666; font-size: 13px; background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+            💡 <strong>Note:</strong> Use this form for both user and admin login. Your credentials will be verified against the appropriate account type.
+        </p>
+
+        <form action="/ECHO/controller/loginValidation.php"  method="POST">
 
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="Enter your Email"

@@ -14,7 +14,7 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'){
     exit();
 }
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 

@@ -8,7 +8,7 @@
         exit();
     }
 
-    require_once '../config/database.php';
+    require_once '../model/database.php';
 
         $db = new Database();
         $connection = $db->getConnection();

@@ -8,19 +8,46 @@ if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     exit();
 }
 
+require_once '../model/database.php';
+
+$db = new Database();
+$connection = $db->getConnection();
+
+$user_id = $_SESSION['user'];
+
+// Check if user is restricted or banned
+$restrictionSql = "SELECT * FROM user_restriction 
+                   WHERE user_id = ? AND (restriction_end_date > NOW() OR (restriction_type = 'permanent' AND restriction_end_date IS NULL))
+                   LIMIT 1";
+$restrictionStmt = $connection->prepare($restrictionSql);
+$restrictionStmt->bind_param('i', $user_id);
+$restrictionStmt->execute();
+$restrictionResult = $restrictionStmt->get_result();
+
+if($restrictionResult && $restrictionResult->num_rows > 0){
+    $restriction = $restrictionResult->fetch_assoc();
+    
+    if($restriction['restriction_type'] === 'permanent'){
+        $_SESSION['story_error'] = "❌ Your account is banned. You cannot post stories.";
+    } else {
+        $_SESSION['story_error'] = "⏱️ Your account is restricted. You cannot post stories until " . date('M d, Y H:i', strtotime($restriction['restriction_end_date']));
+    }
+    
+    $restrictionStmt->close();
+    $db->close();
+    header('Location: ../view/dashboard/dashboard.php');
+    exit();
+}
+
+$restrictionStmt->close();
+
 // ✅ Only process POST requests
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-    
-    require_once '../config/database.php';
-
-    $db = new Database();
-    $connection = $db->getConnection();
     
     // ✅ Get form data
     $title = trim($_POST["title"]);
     $category = trim($_POST["category"]);
     $contents = trim($_POST["contents"]);
-    $user_id = $_SESSION['user']; // Get logged-in user ID
     
     // ✅ Validate inputs
     if(empty($title) || empty($category) || empty($contents)){

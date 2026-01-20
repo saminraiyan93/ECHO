@@ -10,7 +10,7 @@ if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
 // Only process POST requests
 if($_SERVER["REQUEST_METHOD"] == "POST"){
     
-    require_once __DIR__ . '/../config/database.php';
+    require_once __DIR__ . '/../model/database.php';
     
     $db = new Database();
     $connection = $db->getConnection();

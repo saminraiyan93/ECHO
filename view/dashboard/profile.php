@@ -9,7 +9,7 @@ if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
 }
 
 // Get user data from database
-require_once '../../config/database.php';
+require_once '../../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 
@@ -23,6 +23,21 @@ if(!$result || $result->num_rows == 0){
 }
 
 $userData = $result->fetch_assoc();
+
+// Fetch restriction details if user is restricted
+$restrictionDetails = null;
+if($userData['status'] === 'restricted'){
+    $restrictionSql = "SELECT restriction_end_date FROM user_restriction WHERE user_id = ? AND restriction_end_date > NOW() LIMIT 1";
+    $restrictionStmt = $connection->prepare($restrictionSql);
+    $restrictionStmt->bind_param('i', $userId);
+    $restrictionStmt->execute();
+    $restrictionResult = $restrictionStmt->get_result();
+    if($restrictionResult && $restrictionResult->num_rows > 0){
+        $restrictionDetails = $restrictionResult->fetch_assoc();
+    }
+    $restrictionStmt->close();
+}
+
 $db->close();
 ?>
 
@@ -91,6 +106,26 @@ $db->close();
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
+        }
+
+        .status-badge.restricted {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-badge.banned {
+            background: #dc3545;
+            color: white;
+        }
+
+        .restriction-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            color: #856404;
+            font-size: 14px;
         }
 
         .btn-edit, .btn-save, .btn-cancel {
@@ -179,7 +214,30 @@ $db->close();
 
                 <div class="profile-info">
                     <label>Account Status:</label>
-                    <span class="status-badge"><?php echo strtoupper($userData['status']); ?></span>
+                    <?php 
+                        $statusClass = '';
+                        $statusText = strtoupper($userData['status']);
+                        
+                        if($userData['status'] === 'restricted'){
+                            $statusClass = 'restricted';
+                        } elseif($userData['status'] === 'banned'){
+                            $statusClass = 'banned';
+                        }
+                    ?>
+                    <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                    
+                    <?php if($userData['status'] === 'restricted' && $restrictionDetails): ?>
+                        <div class="restriction-info">
+                            ⏱️ <strong>Restriction Active Until:</strong><br>
+                            <?php echo date('M d, Y H:i', strtotime($restrictionDetails['restriction_end_date'])); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if($userData['status'] === 'banned'): ?>
+                        <div class="restriction-info">
+                            🚫 <strong>Your account is banned and you cannot perform any actions.</strong>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <div style="margin-top: 30px;">

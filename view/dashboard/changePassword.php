@@ -9,7 +9,7 @@ if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
 }
 
 // Get user data from database
-require_once '../../config/database.php';
+require_once '../../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 

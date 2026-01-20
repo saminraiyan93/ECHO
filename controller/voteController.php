@@ -7,9 +7,40 @@ if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     exit();
 }
 
-require_once '../config/database.php';
+require_once '../model/database.php';
+
+$db = new Database();
+$connection = $db->getConnection();
 
 $response = ['status' => 'error', 'message' => ''];
+
+$user_id = $_SESSION['user'];
+
+// Check if user is restricted or banned
+$restrictionSql = "SELECT * FROM user_restriction 
+                   WHERE user_id = ? AND (restriction_end_date > NOW() OR (restriction_type = 'permanent' AND restriction_end_date IS NULL))
+                   LIMIT 1";
+$restrictionStmt = $connection->prepare($restrictionSql);
+$restrictionStmt->bind_param('i', $user_id);
+$restrictionStmt->execute();
+$restrictionResult = $restrictionStmt->get_result();
+
+if($restrictionResult && $restrictionResult->num_rows > 0){
+    $restriction = $restrictionResult->fetch_assoc();
+    
+    if($restriction['restriction_type'] === 'permanent'){
+        $response['message'] = "❌ Your account is banned. You cannot vote on stories.";
+    } else {
+        $response['message'] = "⏱️ Your account is restricted. You cannot vote until " . date('M d, Y H:i', strtotime($restriction['restriction_end_date']));
+    }
+    
+    echo json_encode($response);
+    $restrictionStmt->close();
+    $db->close();
+    exit();
+}
+
+$restrictionStmt->close();
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $data = json_decode(file_get_contents('php://input'), true);
@@ -21,10 +52,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 
     $story_id = intval($data['story_id']);
-    $user_id = $_SESSION['user'];
-
-    $db = new Database();
-    $connection = $db->getConnection();
 
     // Check if user has already voted on this story
     $checkVote = "SELECT * FROM vote WHERE user_id = ? AND story_id = ?";

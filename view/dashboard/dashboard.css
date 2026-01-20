@@ -7,27 +7,24 @@
 
 #logout-btn {
     background: linear-gradient(90deg, #d4114b, #ad84d1);
-    ;
     color: white;
     padding: 10px 20px;
     border: none;
     cursor: pointer;
     border-radius: 6px;
-    /* optional */
     font-size: 14px;
-    /* optional */
 }
 
 #logout-btn:hover {
     background: linear-gradient(90deg, #8c0f35, #3f0a6f);
 }
 
-/* Remove default form margin */
+
 .user form {
     margin: 0;
 }
 
-/* TOP BAR */
+
 .topbar {
     background: linear-gradient(90deg, #7b1e3a, #5b2c83);
     color: white;
@@ -53,12 +50,12 @@
     border-radius: 50%;
 }
 
-/* LAYOUT */
+
 .layout {
     display: flex;
 }
 
-/* SIDEBAR */
+
 .sidebar {
     width: 230px;
     background: #fdfbff;
