@@ -1,15 +1,13 @@
 <?php
 session_start();
 
-// Route protection
 if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     $_SESSION['restrictedMsg'] = 'You must log in first!';
     header('Location: ../login/login.php');
     exit();
 }
 
-// Get user data from database
-require_once '../../config/database.php';
+require_once '../../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 
@@ -23,6 +21,20 @@ if(!$result || $result->num_rows == 0){
 }
 
 $userData = $result->fetch_assoc();
+
+$restrictionDetails = null;
+if($userData['status'] === 'restricted'){
+    $restrictionSql = "SELECT restriction_end_date FROM user_restriction WHERE user_id = ? AND restriction_end_date > NOW() LIMIT 1";
+    $restrictionStmt = $connection->prepare($restrictionSql);
+    $restrictionStmt->bind_param('i', $userId);
+    $restrictionStmt->execute();
+    $restrictionResult = $restrictionStmt->get_result();
+    if($restrictionResult && $restrictionResult->num_rows > 0){
+        $restrictionDetails = $restrictionResult->fetch_assoc();
+    }
+    $restrictionStmt->close();
+}
+
 $db->close();
 ?>
 
@@ -44,13 +56,6 @@ $db->close();
         .profile-avatar {
             text-align: center;
             margin-bottom: 30px;
-        }
-
-        .profile-avatar img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid #007bff;
         }
 
         .profile-info {
@@ -91,6 +96,26 @@ $db->close();
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
+        }
+
+        .status-badge.restricted {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-badge.banned {
+            background: #dc3545;
+            color: white;
+        }
+
+        .restriction-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            color: #856404;
+            font-size: 14px;
         }
 
         .btn-edit, .btn-save, .btn-cancel {
@@ -136,7 +161,7 @@ $db->close();
         <h1>Echo</h1>
         <div class="user">
             <span><?php echo htmlspecialchars($userData['user_name']); ?></span>
-            <img src="https://i.imgur.com/7k12EPD.png" alt="profile">
+            <span style="font-size: 24px; margin: 0 10px;">👤</span>
             <form action="../../controller/logoutController.php" method="POST">
                 <button type="submit" id="logout-btn">Logout</button>
             </form>
@@ -147,7 +172,7 @@ $db->close();
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="sidebar-profile">
-                <img src="https://i.imgur.com/7k12EPD.png">
+                <div style="font-size: 48px; margin-bottom: 10px;">👤</div>
                 <h4><?php echo htmlspecialchars($userData['user_name']); ?></h4>
             </div>
 
@@ -163,7 +188,7 @@ $db->close();
         <main class="main">
             <div class="profile-container">
                 <div class="profile-avatar">
-                    <img src="https://i.imgur.com/7k12EPD.png" alt="Profile Picture">
+                    <div style="font-size: 100px; margin-bottom: 20px;">👤</div>
                     <h2><?php echo htmlspecialchars($userData['user_name']); ?></h2>
                 </div>
 
@@ -179,7 +204,30 @@ $db->close();
 
                 <div class="profile-info">
                     <label>Account Status:</label>
-                    <span class="status-badge"><?php echo strtoupper($userData['status']); ?></span>
+                    <?php 
+                        $statusClass = '';
+                        $statusText = strtoupper($userData['status']);
+                        
+                        if($userData['status'] === 'restricted'){
+                            $statusClass = 'restricted';
+                        } elseif($userData['status'] === 'banned'){
+                            $statusClass = 'banned';
+                        }
+                    ?>
+                    <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                    
+                    <?php if($userData['status'] === 'restricted' && $restrictionDetails): ?>
+                        <div class="restriction-info">
+                            ⏱️ <strong>Restriction Active Until:</strong><br>
+                            <?php echo date('M d, Y H:i', strtotime($restrictionDetails['restriction_end_date'])); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if($userData['status'] === 'banned'): ?>
+                        <div class="restriction-info">
+                            🚫 <strong>Your account is banned and you cannot perform any actions.</strong>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <div style="margin-top: 30px;">

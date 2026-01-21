@@ -3,7 +3,6 @@ session_start();
 
 header('Content-Type: application/json');
 
-// Check login
 if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
@@ -14,7 +13,7 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'){
     exit();
 }
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 
@@ -41,7 +40,6 @@ if($new !== $confirm){
     exit();
 }
 
-// Fetch current password from DB
 $sql = "SELECT password FROM user WHERE user_id = ? LIMIT 1";
 $stmt = $connection->prepare($sql);
 if(!$stmt){
@@ -59,19 +57,7 @@ if(!$result || $result->num_rows === 0){
     $stmt->close();
     $db->close();
     exit();
-}
 
-$row = $result->fetch_assoc();
-$stmt->close();
-
-// Note: existing app stores plain-text passwords; compare directly to remain compatible
-if($row['password'] !== $current){
-    echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
-    $db->close();
-    exit();
-}
-
-// Update password
 $updateSql = "UPDATE user SET password = ? WHERE user_id = ?";
 $upStmt = $connection->prepare($updateSql);
 if(!$upStmt){
@@ -82,7 +68,6 @@ if(!$upStmt){
 
 $upStmt->bind_param('si', $new, $userId);
 if($upStmt->execute()){
-    // If remember password cookie exists, update it
     if(isset($_COOKIE['remember_password'])){
         setcookie('remember_password', $new, time()+86400*30, '/');
     }

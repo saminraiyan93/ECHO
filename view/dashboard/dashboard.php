@@ -1,19 +1,63 @@
 <?php
 session_start();
 
-// route protection
 if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     $_SESSION['restrictedMsg'] = 'You must log in first to enter dashboard!';
     header('Location: ../login/login.php');
     exit();
 }
 
+require_once '../../model/database.php';
+$db = new Database();
+$connection = $db->getConnection();
+
+$user_id = $_SESSION['user'];
+$userRestrictionStatus = null;
+$userRestrictionEndDate = null;
+$isBanned = false;
+$isRestricted = false;
+
+$statusSql = "SELECT status FROM user WHERE user_id = ? LIMIT 1";
+$statusStmt = $connection->prepare($statusSql);
+$statusStmt->bind_param('i', $user_id);
+$statusStmt->execute();
+$statusResult = $statusStmt->get_result();
+
+if($statusResult && $statusResult->num_rows > 0){
+    $userStatus = $statusResult->fetch_assoc();
+    
+    if($userStatus['status'] === 'banned'){
+        $isBanned = true;
+        session_destroy();
+        $_SESSION['restrictedMsg'] = '⛔ Your account has been banned. You no longer have access to ECHO.';
+        header('Location: ../login/login.php');
+        exit();
+    }
+    
+    if($userStatus['status'] === 'restricted'){
+        $isRestricted = true;
+        $restrictionSql = "SELECT restriction_end_date FROM user_restriction WHERE user_id = ? AND restriction_end_date > NOW() LIMIT 1";
+        $restrictionStmt = $connection->prepare($restrictionSql);
+        if($restrictionStmt){
+            $restrictionStmt->bind_param('i', $user_id);
+            $restrictionStmt->execute();
+            $restrictionResult = $restrictionStmt->get_result();
+            if($restrictionResult && $restrictionResult->num_rows > 0){
+                $restriction = $restrictionResult->fetch_assoc();
+                $userRestrictionEndDate = $restriction['restriction_end_date'];
+            }
+            $restrictionStmt->close();
+        }
+    }
+}
+
+$statusStmt->close();
+$db->close();
+
 $user = '';
 if(isset($_SESSION['user_name'])){
     $user = $_SESSION['user_name'];
-}
-
-?>
+}?>
 
 <html>
     <head>
@@ -21,13 +65,18 @@ if(isset($_SESSION['user_name'])){
     <link rel="stylesheet" href="./dashboard.css">
     </head>
     <body>
+        <?php if($isRestricted): ?>
+            <div style="background-color: #fff3cd; border: 2px solid #ffc107; color: #856404; padding: 15px 20px; margin: 10px; border-radius: 5px; font-weight: bold;">
+                ⏱️ <strong>Account Restricted:</strong> Your account is restricted until <?php echo date('M d, Y H:i', strtotime($userRestrictionEndDate)); ?>. You cannot post or vote during this period.
+            </div>
+        <?php endif; ?>
+
                 <!-- TOP BAR -->
         <header class="topbar">
             <h1>Echo</h1>
 
             <div class="user">
-                <span><?php echo $user ?></span>
-                <img src="https://i.imgur.com/7k12EPD.png" alt="profile">
+                <span>✨ <?php echo $user ?></span>
                 <!-- logout button  -->
                 <form action="../../controller/logoutController.php" method="POST">
                     <button type="submit" id= "logout-btn" >🚪Logout</button>
@@ -41,8 +90,7 @@ if(isset($_SESSION['user_name'])){
             <!-- SIDEBAR -->
             <aside class="sidebar">
                 <div class="sidebar-profile">
-                    <img src="https://i.imgur.com/7k12EPD.png">
-                    <h4>John Doe</h4>
+                    <h4>✨ <?php echo htmlspecialchars($user); ?></h4>
                 </div>
 
                 <ul>
@@ -63,11 +111,8 @@ if(isset($_SESSION['user_name'])){
                     <form action="../../controller/createStoryController.php" method="POST" >
                         <input type="text" name="title"  placeholder="Story title" required>
 
-                        <select name="category" required>
+                        <select name="category" id="category-select" required>
                             <option selected disabled>Choose category</option>
-                            <option value="Technology">Technology</option>
-                            <option value="Education" >Education</option>
-                            <option value="Personal" >Personal</option>
                         </select>
 
                         <textarea name="contents" rows="4" placeholder="Write your story..." required></textarea>
@@ -89,6 +134,47 @@ if(isset($_SESSION['user_name'])){
         </div>
 
         <script>
+            // Load categories on page load
+            function loadCategories(){
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '../../controller/fetchCategoriesController.php', true);
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState == 4){
+                        if(xhr.status == 200){
+                            try{
+                                const data = JSON.parse(xhr.responseText);
+                                if(data.success && data.categories){
+                                    const categorySelect = document.getElementById('category-select');
+                                    const currentValue = categorySelect.value; // preserve current selection
+                                    
+                                    // Clear existing options except the placeholder
+                                    const options = categorySelect.querySelectorAll('option');
+                                    for(let i = options.length - 1; i > 0; i--){
+                                        categorySelect.removeChild(options[i]);
+                                    }
+                                    
+                                    // Add categories
+                                    data.categories.forEach(category => {
+                                        const option = document.createElement('option');
+                                        option.value = category;
+                                        option.textContent = category;
+                                        categorySelect.appendChild(option);
+                                    });
+                                    
+                                    // Restore previous selection if it still exists
+                                    if(currentValue){
+                                        categorySelect.value = currentValue;
+                                    }
+                                }
+                            } catch(e){
+                                console.error("Error parsing categories: ", e);
+                            }
+                        }
+                    }
+                };
+                xhr.send();
+            }
+
             function loadStories(){
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', '../../controller/fetchStories.php', true);
@@ -103,7 +189,7 @@ if(isset($_SESSION['user_name'])){
                                 document.getElementById("story-container").innerHTML = '<p style="color: red;">Failed to parse stories data.</p>';
                             }
                         } else {
-                    // Handle error
+                    
                     console.error("Error:", xhr.status, xhr.statusText);
                     document.getElementById("story-container").innerHTML = 
                         '<p style="color: red;">Failed to load stories. Please refresh the page.</p>';
@@ -121,7 +207,7 @@ if(isset($_SESSION['user_name'])){
                     return;
                 }
 
-                // this -- clear previous content
+                // clear previous content
                 container.innerHTML = '';
 
                 for(let i=0; i<data.length; i++){
@@ -132,7 +218,7 @@ if(isset($_SESSION['user_name'])){
                     const storyCard = `
                         <div class="story-card">
                             <div class="story-header">
-                                <img src="https://i.imgur.com/7k12EPD.png">
+                                <span class="user-icon">✨</span>
                                 <div>
                                     <h4>${story.user_name}</h4>
                                     <span>${story.category} • ${timeAgo}</span>
@@ -144,9 +230,8 @@ if(isset($_SESSION['user_name'])){
 
                             <div class="story-actions">
                                 <button class="vote-btn" onclick="toggleVote(${story.story_id}, this)">${heartIcon} ${story.vote}</button>
-                                <button>💬 Comment</button>
                             </div>
-                        </div> ` ;
+                        </div><br><br>` ;
 
                         container.innerHTML += storyCard;
                 }
@@ -203,6 +288,16 @@ if(isset($_SESSION['user_name'])){
                 }
             }
 
+        </script>
+
+        <script>
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function(){
+                loadCategories();
+                loadStories();
+                // Reload categories every 30 seconds to catch admin updates
+                setInterval(loadCategories, 30000);
+            });
         </script>
 
     </body>
