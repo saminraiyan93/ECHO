@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Route protection
 if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     $_SESSION['restrictedMsg'] = 'You must log in first!';
     header('Location: ../login/login.php');
@@ -20,22 +19,20 @@ if(isset($_SESSION['user_name'])){
         <link rel="stylesheet" href="./dashboard.css">
     </head>
     <body>
-        <!-- TOP BAR -->
         <header class="topbar">
             <h1>Echo</h1>
             <div class="user">
                 <span><?php echo $user; ?></span>
-                <img src="https://i.imgur.com/7k12EPD.png" alt="profile">
+                <span style="font-size: 24px; margin: 0 10px;">👤</span>
                 <form action="../../controller/logoutController.php" method="POST">
                     <button type="submit" id="logout-btn">Logout</button>
                 </form>
             </div>
         </header>
         <div class="layout">
-        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="sidebar-profile">
-                <img src="https://i.imgur.com/7k12EPD.png">
+                <div style="font-size: 48px; margin-bottom: 10px;">👤</div>
                 <h4><?php echo $user; ?></h4>
             </div>
 
@@ -47,14 +44,12 @@ if(isset($_SESSION['user_name'])){
             </ul>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="main">
             <div class="my-stories-header">
                 <h2>My Stories</h2>
                 <p>Manage all your stories in one place</p>
             </div>
 
-            <!-- Stories Container -->
             <div class="feed">
                 <div id="my-stories-container">
                     <p>Loading your stories...</p>
@@ -108,7 +103,7 @@ if(isset($_SESSION['user_name'])){
                 const storyCard = `
                     <div class="story-card" id="story-${story.story_id}">
                         <div class="story-header">
-                            <img src="https://i.imgur.com/7k12EPD.png">
+                            <div style="font-size: 32px; margin-right: 10px;">👤</div>
                             <div>
                                 <h4>${story.user_name}</h4>
                                 <span>${story.category} • ${timeAgo}</span>

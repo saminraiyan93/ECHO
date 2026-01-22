@@ -1,15 +1,13 @@
 <?php
 session_start();
 
-// Route protection
 if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
     $_SESSION['restrictedMsg'] = 'You must log in first!';
     header('Location: ../login/login.php');
     exit();
 }
 
-// Get user data from database
-require_once '../../config/database.php';
+require_once '../../model/database.php';
 $db = new Database();
 $connection = $db->getConnection();
 
@@ -39,7 +37,7 @@ $db->close();
         <h1>Echo</h1>
         <div class="user">
             <span><?php echo htmlspecialchars($userData['user_name']); ?></span>
-            <img src="https://i.imgur.com/7k12EPD.png" alt="profile">
+            <span style="font-size: 24px; margin: 0 10px;">👤</span>
             <form action="../../controller/logoutController.php" method="POST">
                 <button type="submit" id="logout-btn">Logout</button>
             </form>
@@ -49,7 +47,7 @@ $db->close();
     <div class="layout">
         <aside class="sidebar">
             <div class="sidebar-profile">
-                <img src="https://i.imgur.com/7k12EPD.png">
+                <div style="font-size: 48px; margin-bottom: 10px;">👤</div>
                 <h4><?php echo htmlspecialchars($userData['user_name']); ?></h4>
             </div>
 

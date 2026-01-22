@@ -1,14 +1,13 @@
 <?php
     session_start();
 
-    // Check if user is logged in
     if(!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true){
         $_SESSION['restrictedMsg'] = 'You must login first';
         header('Location: ../view/login/login.php');
         exit();
     }
 
-    require_once '../config/database.php';
+    require_once '../model/database.php';
 
         $db = new Database();
         $connection = $db->getConnection();
@@ -24,7 +23,6 @@
             while($row = $result->fetch_assoc()){
                 $story_id = $row['story_id'];
 
-                // Check if current user has voted on this story
                 $voteCheck = "SELECT * FROM vote WHERE user_id = ? AND story_id = ?";
                 $stmt = $connection->prepare($voteCheck);
                 $stmt->bind_param("ii", $user_id, $story_id);
@@ -46,7 +44,6 @@
             }
         }
 
-        // return json response
         header('Content-Type: application/json');
         echo json_encode($stories);
 

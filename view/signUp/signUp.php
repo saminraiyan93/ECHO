@@ -1,29 +1,48 @@
 <?php
-    
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 
-    // to be implemented
-    // check if already logged in 
-    // if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true){
-    //     header()
-    // }
+    if(!isset($error)){
+        $error = [];
+    }
+    
+    if(isset($_SESSION['signup_errors'])){
+        $error = array_merge($error, $_SESSION['signup_errors']);
+        unset($_SESSION['signup_errors']);
+    }
 ?>
 
 <html>
+    <head>
+        <link rel="stylesheet" href="signUp.css">
+    </head>
     <body>
-        <h1>Welcome, Sign-Up to begin your journey🚀</h1>
-        <?php if (!empty($_SESSION['signup_success'])) { ?>
-            <p style="color: green; font-weight: bold;">
-                <?php echo $_SESSION['signup_success']; ?>
-                <br>
-                <a href="../view/login/login.php">Click here to login</a>
-            </p>
-        <?php } ?>
-        <form action="../../controller/signUpController.php" method="POST">
-            <label for="name">Name: </label>
+        <div class="signup-wrapper">
+            <div class="signup-header">
+                <h2>Join Echo Today</h2>
+                <p>Create your account and start your journey with a modern, secure and simple platform built for you.</p>
+            </div>
+
+            <div class="form-container">
+                <form action="../../controller/signUpController.php" method="POST">
+                    <h1>Create an account</h1>
+                    <p class="subtitle">It's quick and easy.</p>
+                    
+                    <?php if (!empty($_SESSION['signup_success'])) { ?>
+                        <p class="success">
+                            <?php echo htmlspecialchars($_SESSION['signup_success']); 
+                            unset($_SESSION['signup_success']); ?>
+                            <br><br>
+                            <a href="../../view/login/login.php" style="color: #166534; text-decoration: none; font-weight: bold;">Click here to login</a>
+                        </p>
+                    <?php } ?>
+
+                    <label for="name">Name: </label>
             <input type="text" id="name" name="name" placeholder="Enter your Name" >
             <?php
                 if(isset($error["name"])){
-                    echo "<span style='color:red'>" . $error["name"] . "</span>";
+                    echo "<p class='field-error'>" . htmlspecialchars($error["name"]) . "</p>";
                 }
             ?>
             <br>
@@ -31,7 +50,7 @@
             <input type="email" id="email" name="email" placeholder="Enter your Email" >
             <?php
                 if(isset($error["email"])){
-                    echo "<span style='color:red'>" . $error["email"] . "</span>";
+                    echo "<p class='field-error'>" . htmlspecialchars($error["email"]) . "</p>";
                 }
             ?>
             <br>
@@ -39,15 +58,17 @@
             <input type="password" id="password" name="password" placeholder="Enter Password" >
             <?php
                 if(isset($error["password"])){
-                    echo "<span style='color:red'>" . $error["password"] . "</span>";
+                    echo "<p class='field-error'>" . htmlspecialchars($error["password"]) . "</p>";
                 }
             ?>
             <br>
-            <input type="submit">
+            <input type="submit" value="Create Account">
 
-        </form>
+                </form>
 
-        
-
-    </body>
-</html>
+                <div class="form-footer">
+                    Already have an account?
+                    <a href="../../view/login/login.php">Login</a>
+                </div>
+            </div>
+        </div>

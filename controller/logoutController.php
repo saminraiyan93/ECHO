@@ -1,6 +1,5 @@
 <?php
 
-// Destroy session on logout
 session_start();
 session_unset();
 session_destroy();
